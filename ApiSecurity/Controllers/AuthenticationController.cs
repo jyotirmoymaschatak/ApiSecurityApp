@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
@@ -18,10 +19,11 @@ public class AuthenticationController : ControllerBase
         _config = config;
     }
     public record AuthenticationData(string? UserName, string? Password);
-    public record UserData(int UserId, string UserName);
+    public record UserData(int UserId, string UserName, string title, string employeeId);
 
     // api/authentication/token
     [HttpPost("token")]
+    [AllowAnonymous]
     public ActionResult<string> Authenticate([FromBody] AuthenticationData data)
     {
         var user = ValidateCredentials(data);
@@ -43,6 +45,8 @@ public class AuthenticationController : ControllerBase
         List<Claim> claims = new List<Claim>();
         claims.Add(new Claim(JwtRegisteredClaimNames.Sub, user.UserId.ToString()));
         claims.Add(new Claim(JwtRegisteredClaimNames.UniqueName, user.UserName.ToString()));
+        claims.Add(new Claim("title", user.title));
+        claims.Add(new Claim("employeeId", user.employeeId));
 
         var token = new JwtSecurityToken(
             _config.GetValue<string>("Authentication:Issuer"),
@@ -60,13 +64,13 @@ public class AuthenticationController : ControllerBase
         if(CompareValues(data.UserName,"jyoti") &&
             CompareValues(data.Password,"secret"))
         {
-            return new UserData(1, data.UserName!);
+            return new UserData(1, data.UserName!, "Developer", "50050");
         }
 
         if (CompareValues(data.UserName, "diego") &&
             CompareValues(data.Password, "tequila"))
         {
-            return new UserData(2, data.UserName!);
+            return new UserData(2, data.UserName!, "Puppet", "50051");
         }
         return null;
     }

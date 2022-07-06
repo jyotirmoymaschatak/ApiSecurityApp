@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Authorization;
+﻿using ApiSecurity.Constants;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 
@@ -24,7 +25,7 @@ public class UsersController : ControllerBase
 
     // GET api/<UsersController>/5
     [HttpGet("{id}")]
-    [Authorize]
+    [Authorize(Policy = PolicyConstants.MustHaveEmployeeId)]
     public string Get(int id)
     {
         return _config.GetConnectionString("Default");
